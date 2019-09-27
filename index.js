@@ -4,7 +4,7 @@ require('dotenv').config()
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-
+const Person = require('./models/person');
 app.use(express.static('build'))
 app.use(cors())
 
@@ -42,13 +42,23 @@ let persons = [
         "id": 4
       }
 ]
+
+// const person = new Person({
+//   name: process.argv[3],
+//   number: process.argv[4],
+// });
+
+
+
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
 
 app.get('/api/persons',(req,res) => {
-    res.json(persons)
+  Person.find({}).then(persons => {
+    res.json(persons.map(person => person.toJSON()))
+  })
 })
 
 //gets single phonebook entry specified with the id
@@ -62,32 +72,33 @@ app.get('/api/persons/:id', (req, res) => {
   }
 });
 
-const generateId = () => Math.floor(Math.random() * 99999);
-app.post('/api/persons', (req, res) => {
-  const body = req.body;
-  const contactExist = persons.filter(person => person.name === body.name);
 
-  if (!body.name) {
-    return res.status(400).json({
-      error: 'name is missing',
-    });
-  } else if (!body.number) {
-    return res.status(400).json({
-      error: 'number is missing',
-    });
-  } else if (contactExist.length > 0) {
-    return res.status(400).json({
-      error: 'name must be unique',
-    });
-  }
-  const person = {
-    name: body.name,
-    number: body.number,
-    id: generateId(),
-  };
-  persons = persons.concat(person);
-  res.json(person);
-})
+  const generateId = () => Math.floor(Math.random() * 99999);
+  app.post('/persons', (req, res) => {
+    const body = req.body;
+    const contactExist = persons.filter(person => person.name === body.name);
+  
+    if (!body.name) {
+      return res.status(400).json({
+        error: 'name is missing',
+      });
+    } else if (!body.number) {
+      return res.status(400).json({
+        error: 'number is missing',
+      });
+    } else if (contactExist.length > 0) {
+      return res.status(400).json({
+        error: 'name must be unique',
+      });
+    }
+    const person = {
+      name: body.name,
+      number: body.number,
+      id: generateId(),
+    };
+    persons = persons.concat(person);
+    res.json(person);
+  })
 
 app.delete('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
@@ -96,7 +107,14 @@ app.delete('/api/persons/:id', (req, res) => {
   res.status(204).end();
 });
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
-const PORT = process.env.PORT
+app.use(unknownEndpoint)
+
+
+
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`)})
