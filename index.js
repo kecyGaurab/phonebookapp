@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+require('dotenv').config()
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -96,6 +97,6 @@ app.delete('/api/persons/:id', (req, res) => {
 });
 
 
-const PORT = 3001 
+const PORT = process.env.PORT
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`)})
