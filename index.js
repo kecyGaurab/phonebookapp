@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+app.use(express.static('build'))
 app.use(cors())
 
 app.use(bodyParser.json());
@@ -40,9 +41,9 @@ let persons = [
         "id": 4
       }
 ]
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
+// app.get('/', (request, response) => {
+//   response.send('<h1>Hello World!</h1>')
+// })
 
 
 app.get('/api/persons',(req,res) => {
