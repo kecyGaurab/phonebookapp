@@ -123,13 +123,17 @@ app.put('/api/persons/:id',(req, res, next)=>{
     name: body.name,
     number: body.number,
   }
-
-  Person.findByIdAndUpdate(req.params.id, person, { new:true})
+  if(person.number >0100000000 && person.number < 9999999999)
+ { Person.findByIdAndUpdate(req.params.id, person, { new:true})
   .then(updatedPerson => {
     res.json(updatedPerson.toJSON())
   })
-  .catch(error =>next(error))
+  .catch(error =>next(error))}
+  else{
+    res.status(404).send({error:'The phone number is not valid.Please double check the number'})
+  }
 })
+
 
 
 const unknownEndpoint = (req, res) => {
