@@ -46,11 +46,6 @@ let persons = [
 
 //gets the info page that displays information of when the request is processed
 app.get('/info', (req, res) => {
-  // const contactNumber = Person.length;
-  // const dateCreated = new Date();
-  // const info = `<p>Phonebook has info for ${contactNumber} people</p>
-  //   <p>${dateCreated}</p>`;
-  // res.send(info);
   Person.estimatedDocumentCount()
   .then(totalCount => {
     res.json(`Phonebook has info for ${totalCount} people`)
@@ -109,10 +104,12 @@ app.get('/api/persons/:id', (req, res, next) => {
   })
 
 //deletes the person from database
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(person => person.id !== id);
-  res.status(204).end();
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+  .catch(error =>next(error))
 });
 
 //updated the person's number
@@ -138,6 +135,16 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
