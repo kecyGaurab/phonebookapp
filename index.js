@@ -37,18 +37,24 @@ let persons = [
         "name": "Dan Abramov", 
         "number": "12-43-234345",
         "id": 3
-      },
-      { 
-        "name": "Mary Poppendieck", 
-        "number": "39-23-6423122",
-        "id": 4
-      }
-]
+      }]
 
 // const person = new Person({
 //   name: process.argv[3],
 //   number: process.argv[4],
 // });
+
+//gets the info page that displays information of when the request is processed
+app.get('/info', (req, res) => {
+  // const contactNumber = Person.length;
+  // const dateCreated = new Date();
+  // const info = `<p>Phonebook has info for ${contactNumber} people</p>
+  //   <p>${dateCreated}</p>`;
+  // res.send(info);
+  Person.estimatedDocumentCount()
+  .then(totalCount => {
+    res.json(`Phonebook has info for ${totalCount} people`)
+})})
 
 
 //gets all the phonebook entries 
@@ -102,12 +108,14 @@ app.get('/api/persons/:id', (req, res, next) => {
         });
   })
 
+//deletes the person from database
 app.delete('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
   persons = persons.filter(person => person.id !== id);
   res.status(204).end();
 });
 
+//updated the person's number
 app.put('/api/persons/:id',(req, res, next)=>{
   const body = req.body
 
