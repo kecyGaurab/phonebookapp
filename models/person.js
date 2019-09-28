@@ -4,7 +4,10 @@ const url = process.env.MONGODB_URI
 
 console.log('connecting to', url)
 
-mongoose.connect(url, { useUnifiedTopology: true, useNewUrlParser: true})
+mongoose.connect(url, { 
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useFindAndModify: false })
 .then(result => {
     console.log('connected to MongoDB')
 })
@@ -14,7 +17,7 @@ mongoose.connect(url, { useUnifiedTopology: true, useNewUrlParser: true})
 
 const personSchema = new mongoose.Schema({
 name:String,
-number:String
+number:String,
 })
 
 personSchema.set('toJSON', {

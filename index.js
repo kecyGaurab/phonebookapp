@@ -4,6 +4,7 @@ require('dotenv').config()
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+
 const Person = require('./models/person')
 
 app.use(express.static('build'))
@@ -50,31 +51,31 @@ let persons = [
 // });
 
 
-
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
-
-
+//gets all the phonebook entries 
 app.get('/api/persons',(req,res) => {
   Person.find({}).then(persons => {
-    res.json(persons.map(person => person.toJSON()))
+    res.json(persons)
   })
 })
 
 //gets single phonebook entry specified with the id
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const person = persons.find(person => person.id === id);
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  }
+app.get('/api/persons/:id', (req, res, next) => {
+  // const id = Number(req.params.id)
+  // const person = persons.find(person => person.id === id);
+  Person.findById(req.params.id)
+  .then(person => {
+    if (person) {
+      res.json(person.toJSON());
+    } else {
+      res.status(404).end();
+    }
+  })
+  .catch(error => next(error))
+  
 });
 
 
-  const generateId = () => Math.floor(Math.random() * 99999);
+//  const generateId = () => Math.floor(Math.random() * 99999);
   app.post('/api/persons', (req, res) => {
     const body = req.body;
     const contactExist = persons.filter(person => person.name === body.name);
@@ -95,7 +96,6 @@ app.get('/api/persons/:id', (req, res) => {
     const person = new Person({
       name: body.name,
       number: body.number,
-      id: generateId(),
     });
     person.save().then(savedPerson => {
           res.json(savedPerson.toJSON());
@@ -105,16 +105,30 @@ app.get('/api/persons/:id', (req, res) => {
 app.delete('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
   persons = persons.filter(person => person.id !== id);
-
   res.status(204).end();
 });
+
+app.put('/api/persons/:id',(req, res, next)=>{
+  const body = req.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new:true})
+  .then(updatedPerson => {
+    res.json(updatedPerson.toJSON())
+  })
+  .catch(error =>next(error))
+})
+
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
-
 
 
 const PORT = process.env.PORT || 3001
