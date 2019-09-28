@@ -4,7 +4,8 @@ require('dotenv').config()
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const Person = require('./models/person');
+const Person = require('./models/person')
+
 app.use(express.static('build'))
 app.use(cors())
 
@@ -74,7 +75,7 @@ app.get('/api/persons/:id', (req, res) => {
 
 
   const generateId = () => Math.floor(Math.random() * 99999);
-  app.post('/persons', (req, res) => {
+  app.post('/api/persons', (req, res) => {
     const body = req.body;
     const contactExist = persons.filter(person => person.name === body.name);
   
@@ -91,13 +92,14 @@ app.get('/api/persons/:id', (req, res) => {
         error: 'name must be unique',
       });
     }
-    const person = {
+    const person = new Person({
       name: body.name,
       number: body.number,
       id: generateId(),
-    };
-    persons = persons.concat(person);
-    res.json(person);
+    });
+    person.save().then(savedPerson => {
+          res.json(savedPerson.toJSON());
+        });
   })
 
 app.delete('/api/persons/:id', (req, res) => {
