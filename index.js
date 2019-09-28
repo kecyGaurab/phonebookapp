@@ -1,17 +1,18 @@
 const express = require('express')
 const app = express()
 require('dotenv').config()
-const morgan = require('morgan')
 const bodyParser = require('body-parser')
-const cors = require('cors')
+
 
 const Person = require('./models/person')
 
-app.use(express.static('build'))
-app.use(cors())
-
 app.use(bodyParser.json());
 
+const cors = require('cors')
+app.use(cors())
+
+
+const morgan = require('morgan')
 //creating custom token
 morgan.token('reqSent', (req, res) => {
   return JSON.stringify(req.body);
@@ -21,6 +22,7 @@ app.use(
     ':method :url :status :res[content-length] - :response-time ms :reqSent'
   )
 );
+app.use(express.static('build'))
 
 let persons = [
     { 
@@ -61,8 +63,6 @@ app.get('/api/persons',(req,res) => {
 
 //gets single phonebook entry specified with the id
 app.get('/api/persons/:id', (req, res, next) => {
-  // const id = Number(req.params.id)
-  // const person = persons.find(person => person.id === id);
   Person.findById(req.params.id)
   .then(person => {
     if (person) {
@@ -77,7 +77,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 
 //  const generateId = () => Math.floor(Math.random() * 99999);
-  app.post('/api/persons', (req, res) => {
+  app.post('/api/persons', (req, res, next) => {
     const body = req.body;
     const contactExist = persons.filter(person => person.name === body.name);
   
@@ -97,17 +97,20 @@ app.get('/api/persons/:id', (req, res, next) => {
     const person = new Person({
       name: body.name,
       number: body.number,
-    });
-    person.save().then(savedPerson => {
-          res.json(savedPerson.toJSON());
-        });
+    })
+    person.save()
+    .then(savedPerson => savedPerson.toJSON())
+    .then(savedAndFormattedPerson => {
+      res.json(savedAndFormattedPerson)
+    })
+    .catch(error=>next(error))
   })
 
 //deletes the person from database
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then(result => {
-      res.status(204).end()
+    res.status(204).end()
     })
   .catch(error =>next(error))
 });
@@ -129,18 +132,20 @@ app.put('/api/persons/:id',(req, res, next)=>{
 })
 
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
+const unknownEndpoint = (req, res) => {
+  res.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, req, res, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError' && error.kind === 'ObjectId') {
-    return response.status(400).send({ error: 'malformatted id' })
-  } 
+    return res.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
+  }
   next(error)
 }
 
