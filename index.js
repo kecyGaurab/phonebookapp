@@ -36,10 +36,6 @@ let persons = [
     'id': 3
   }]
 
-// const person = new Person({
-//   name: process.argv[3],
-//   number: process.argv[4],
-// });
 
 //gets the info page that displays information of when the request is processed
 app.get('/info', (req, res) => {
