@@ -2,12 +2,8 @@ const express = require('express')
 const app = express()
 require('dotenv').config()
 const bodyParser = require('body-parser')
-
-
 const Person = require('./models/person')
-
-app.use(bodyParser.json());
-
+app.use(bodyParser.json())
 const cors = require('cors')
 app.use(cors())
 
@@ -15,31 +11,30 @@ app.use(cors())
 const morgan = require('morgan')
 //creating custom token
 morgan.token('reqSent', (req, res) => {
-  return JSON.stringify(req.body);
-});
+  return JSON.stringify(req.body)
+})
 app.use(
   morgan(
     ':method :url :status :res[content-length] - :response-time ms :reqSent'
   )
-);
+)
 app.use(express.static('build'))
-
 let persons = [
-    { 
-        "name": "Arto Hellas", 
-        "number": "040-123456",
-        "id": 1
-      },
-      { 
-        "name": "Ada Lovelace", 
-        "number": "39-44-5323523",
-        "id": 2
-      },
-      { 
-        "name": "Dan Abramov", 
-        "number": "12-43-234345",
-        "id": 3
-      }]
+  {
+    'name': 'Arto Hellas',
+    'number': '040-123456',
+    'id': 1
+  },
+  {
+    'name': 'Ada Lovelace',
+    'number': '39-44-5323523',
+    'id': 2
+  },
+  {
+    'name': 'Dan Abramov',
+    'number': '12-43-234345',
+    'id': 3
+  }]
 
 // const person = new Person({
 //   name: process.argv[3],
@@ -49,12 +44,12 @@ let persons = [
 //gets the info page that displays information of when the request is processed
 app.get('/info', (req, res) => {
   Person.estimatedDocumentCount()
-  .then(totalCount => {
-    res.json(`Phonebook has info for ${totalCount} people`)
-})})
+    .then(totalCount => {
+      res.json(`Phonebook has info for ${totalCount} people`)
+    })})
 
 
-//gets all the phonebook entries 
+//gets all the phonebook entries
 app.get('/api/persons',(req,res) => {
   Person.find({}).then(persons => {
     res.json(persons)
@@ -64,59 +59,59 @@ app.get('/api/persons',(req,res) => {
 //gets single phonebook entry specified with the id
 app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
-  .then(person => {
-    if (person) {
-      res.json(person.toJSON());
+    .then(person => {
+      if (person) {
+        res.json(person.toJSON())
     } else {
-      res.status(404).end();
+        res.status(404).end()
     }
-  })
-  .catch(error => next(error))
-  
-});
+    })
+    .catch(error => next(error))
+
+})
 
 
 //  const generateId = () => Math.floor(Math.random() * 99999);
   app.post('/api/persons', (req, res, next) => {
-    const body = req.body;
-    const contactExist = persons.filter(person => person.name === body.name);
+  const body = req.body
+    const contactExist = persons.filter(person => person.name === body.name)
   
     if (!body.name) {
-      return res.status(400).json({
-        error: 'name is missing',
-      });
-    } else if (!body.number) {
-      return res.status(400).json({
-        error: 'number is missing',
-      });
-    } else if (contactExist.length > 0) {
-      return res.status(400).json({
-        error: 'name must be unique',
-      });
-    }
-    const person = new Person({
-      name: body.name,
-      number: body.number,
+    return res.status(400).json({
+      error: 'name is missing',
     })
-    person.save()
+    } else if (!body.number) {
+    return res.status(400).json({
+      error: 'number is missing',
+    })
+    } else if (contactExist.length > 0) {
+    return res.status(400).json({
+      error: 'name must be unique',
+    })
+    }
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
+  person.save()
     .then(savedPerson => savedPerson.toJSON())
     .then(savedAndFormattedPerson => {
       res.json(savedAndFormattedPerson)
     })
-    .catch(error=>next(error))
-  })
+    .catch(error => next(error))
+})
 
 //deletes the person from database
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then(result => {
-    res.status(204).end()
+      res.status(204).end()
     })
-  .catch(error =>next(error))
-});
+    .catch(error => next(error))
+})
 
 //updated the person's number
-app.put('/api/persons/:id',(req, res, next)=>{
+app.put('/api/persons/:id',(req, res, next) => {
   const body = req.body
 
   const person = {
@@ -124,13 +119,13 @@ app.put('/api/persons/:id',(req, res, next)=>{
     number: body.number,
   }
   if(person.number >0100000000 && person.number < 9999999999)
- { Person.findByIdAndUpdate(req.params.id, person, { new:true})
-  .then(updatedPerson => {
-    res.json(updatedPerson.toJSON())
-  })
-  .catch(error =>next(error))}
+  { Person.findByIdAndUpdate(req.params.id, person, { new:true })
+    .then(updatedPerson => {
+      res.json(updatedPerson.toJSON())
+    })
+    .catch(error => next(error))}
   else{
-    res.status(404).send({error:'The phone number is not valid.Please double check the number'})
+    res.status(404).send({ error:'The phone number is not valid.Please double check the number' })
   }
 })
 
@@ -157,4 +152,4 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`)})
+  console.log(`Server running on port ${PORT}`)})
