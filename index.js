@@ -10,7 +10,7 @@ app.use(cors())
 
 const morgan = require('morgan')
 //creating custom token
-morgan.token('reqSent', (req, res) => {
+morgan.token('reqSent', (req) => {
   return JSON.stringify(req.body)
 })
 app.use(
@@ -62,9 +62,9 @@ app.get('/api/persons/:id', (req, res, next) => {
     .then(person => {
       if (person) {
         res.json(person.toJSON())
-    } else {
+      } else {
         res.status(404).end()
-    }
+      }
     })
     .catch(error => next(error))
 
@@ -72,23 +72,23 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 
 //  const generateId = () => Math.floor(Math.random() * 99999);
-  app.post('/api/persons', (req, res, next) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
-    const contactExist = persons.filter(person => person.name === body.name)
-  
-    if (!body.name) {
+  const contactExist = persons.filter(person => person.name === body.name)
+
+  if (!body.name) {
     return res.status(400).json({
       error: 'name is missing',
     })
-    } else if (!body.number) {
+  } else if (!body.number) {
     return res.status(400).json({
       error: 'number is missing',
     })
-    } else if (contactExist.length > 0) {
+  } else if (contactExist.length > 0) {
     return res.status(400).json({
       error: 'name must be unique',
     })
-    }
+  }
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -104,7 +104,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 //deletes the person from database
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then(result => {
+    .then(res => {
       res.status(204).end()
     })
     .catch(error => next(error))
@@ -118,7 +118,7 @@ app.put('/api/persons/:id',(req, res, next) => {
     name: body.name,
     number: body.number,
   }
-  if(person.number >0100000000 && person.number < 9999999999)
+  if(person.number >100000000 && person.number < 9999999999)
   { Person.findByIdAndUpdate(req.params.id, person, { new:true })
     .then(updatedPerson => {
       res.json(updatedPerson.toJSON())
