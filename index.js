@@ -115,7 +115,7 @@ app.put('/api/persons/:id',(req, res, next) => {
     name: body.name,
     number: body.number,
   }
-  if(person.number >0100000000 && person.number < 9999999999)
+  if(person.number > 0100000000 && person.number < 9999999999)
   { Person.findByIdAndUpdate(req.params.id, person, { new:true })
     .then(updatedPerson => {
       res.json(updatedPerson.toJSON())
