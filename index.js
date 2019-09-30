@@ -65,38 +65,24 @@ app.get('/api/persons/:id', (req, res, next) => {
     })
     .catch(error => next(error))
 
-})
 
+app.post('/api/persons/', (req, res, next) => {
+  const { name, number } = req.body
 
-//  const generateId = () => Math.floor(Math.random() * 99999);
-app.post('/api/persons', (req, res, next) => {
-  const body = req.body
-  const contactExist = persons.filter(person => person.name === body.name)
-
-  if (!body.name) {
-    return res.status(400).json({
-      error: 'name is missing',
-    })
-  } else if (!body.number) {
-    return res.status(400).json({
-      error: 'number is missing',
-    })
-  } else if (contactExist.length > 0) {
-    return res.status(400).json({
-      error: 'name must be unique',
-    })
-  }
   const person = new Person({
-    name: body.name,
-    number: body.number,
+    name, number
   })
-  person.save()
-    .then(savedPerson => savedPerson.toJSON())
-    .then(savedAndFormattedPerson => {
-      res.json(savedAndFormattedPerson)
+
+  person
+    .save()
+    .then(savedPerson => {
+      res.json(savedPerson.toJSON())
     })
     .catch(error => next(error))
 })
+
+
+
 
 //deletes the person from database
 app.delete('/api/persons/:id', (req, res, next) => {
